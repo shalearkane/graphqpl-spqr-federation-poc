@@ -5,6 +5,7 @@ import com.apollographql.federation.graphqljava._Entity;
 import com.chegg.federation.product.model.Product;
 import com.chegg.federation.product.query.ProductQuery;
 import com.chegg.federation.product.query.ProductService;
+import customMapExposedSchema.MapExposedSchema;
 import graphql.introspection.Introspection;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
@@ -37,72 +38,8 @@ public class GraphQLConfig {
     private static final String TYPE = "type";
 
     @Bean
-    public GraphQLSchema customSchema() {
-
-        GraphQLSchema schema = new GraphQLSchemaGenerator()
-                .withBasePackages("com.chegg.federation.poc.product")
-                .withOperationsFromSingletons(productQuery)
-                .generate();
-
-        // UNREPRESENTABLE scalar
-        GraphQLScalarType unrepresentableScalar = (GraphQLScalarType) schema.getType("UNREPRESENTABLE");
-
-        // _mappedType directive definition
-        GraphQLDirective mappedTypeDirective = GraphQLDirective.newDirective()
-                .name("_mappedType")
-                .description("")
-                .validLocation(Introspection.DirectiveLocation.OBJECT)
-                .argument(GraphQLArgument.newArgument()
-                        .name("type")
-                        .description("")
-                        .type(unrepresentableScalar)
-                        .build()
-                )
-                .build();
-
-        // _mappedOperation directive definition
-        GraphQLDirective mappedOperationDirective = GraphQLDirective.newDirective()
-                .name("_mappedOperation")
-                .description("")
-                .validLocation(Introspection.DirectiveLocation.FIELD_DEFINITION)
-                .argument(GraphQLArgument.newArgument()
-                        .name("operation")
-                        .description("")
-                        .type(unrepresentableScalar)
-                        .build()
-                )
-                .build();
-
-        // _mappedInputField directive definition
-        GraphQLDirective mappedInputFieldDirective = GraphQLDirective.newDirective()
-                .name("_mappedInputField")
-                .description("")
-                .validLocation(Introspection.DirectiveLocation.INPUT_FIELD_DEFINITION)
-                .argument(GraphQLArgument.newArgument()
-                        .name("inputField")
-                        .description("")
-                        .type(unrepresentableScalar)
-                        .build()
-                )
-                .build();
-
-        // Add new definitions to schema
-        GraphQLSchema newSchema = GraphQLSchema.newSchema(schema)
-                .additionalDirective(mappedTypeDirective)
-                .additionalDirective(mappedOperationDirective)
-                .additionalDirective(mappedInputFieldDirective)
-                .build();
-
-
-        GraphQLSchema federatedSchema = createSchemaWithDirectives(newSchema);
-        printSchema(federatedSchema);
-        return federatedSchema;
-    }
-
-
-    private GraphQLSchema createSchemaWithDirectives(GraphQLSchema schema) {
-
-
+    public GraphQLSchema createSchemaWithDirectives() {
+        GraphQLSchema schema = MapExposedSchema.customSchema(productQuery,"com.chegg.federation.product" );
         return Federation.transform(schema).fetchEntities(env -> env.<List<Map<String, Object>>>getArgument(_Entity.argumentName)
                 .stream()
                 .map(values -> {

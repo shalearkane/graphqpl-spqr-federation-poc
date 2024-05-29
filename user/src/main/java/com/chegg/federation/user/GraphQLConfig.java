@@ -5,20 +5,15 @@ import com.apollographql.federation.graphqljava._Entity;
 import com.chegg.federation.user.model.User;
 import com.chegg.federation.user.query.UserQuery;
 import com.chegg.federation.user.query.UserService;
-import graphql.introspection.Introspection;
-import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLDirective;
-import graphql.schema.GraphQLScalarType;
+import customMapExposedSchema.MapExposedSchema;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.SchemaPrinter;
-import io.leangen.graphql.GraphQLSchemaGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Configuration
@@ -31,68 +26,8 @@ public class GraphQLConfig {
     private UserService userService;
 
     @Bean
-    public GraphQLSchema customSchema() {
-
-        GraphQLSchema schema = new GraphQLSchemaGenerator()
-                .withBasePackages("com.chegg.federation.user")
-                .withOperationsFromSingletons(userQuery)
-                .generate();
-
-        // UNREPRESENTABLE scalar
-        GraphQLScalarType unrepresentableScalar = (GraphQLScalarType) schema.getType("UNREPRESENTABLE");
-
-        // _mappedType directive definition
-        GraphQLDirective mappedTypeDirective = GraphQLDirective.newDirective()
-                .name("_mappedType")
-                .description("")
-                .validLocation(Introspection.DirectiveLocation.OBJECT)
-                .argument(GraphQLArgument.newArgument()
-                        .name("type")
-                        .description("")
-                        .type(unrepresentableScalar)
-                        .build()
-                )
-                .build();
-
-        // _mappedOperation directive definition
-        GraphQLDirective mappedOperationDirective = GraphQLDirective.newDirective()
-                .name("_mappedOperation")
-                .description("")
-                .validLocation(Introspection.DirectiveLocation.FIELD_DEFINITION)
-                .argument(GraphQLArgument.newArgument()
-                        .name("operation")
-                        .description("")
-                        .type(unrepresentableScalar)
-                        .build()
-                )
-                .build();
-
-        // _mappedInputField directive definition
-        GraphQLDirective mappedInputFieldDirective = GraphQLDirective.newDirective()
-                .name("_mappedInputField")
-                .description("")
-                .validLocation(Introspection.DirectiveLocation.INPUT_FIELD_DEFINITION)
-                .argument(GraphQLArgument.newArgument()
-                        .name("inputField")
-                        .description("")
-                        .type(unrepresentableScalar)
-                        .build()
-                )
-                .build();
-
-        // Add new definitions to schema
-        GraphQLSchema newSchema = GraphQLSchema.newSchema(schema)
-                .additionalDirective(mappedTypeDirective)
-                .additionalDirective(mappedOperationDirective)
-                .additionalDirective(mappedInputFieldDirective)
-                .build();
-
-        GraphQLSchema federatedSchema = createSchemaWithDirectives(newSchema);
-        printSchema(federatedSchema);
-        return federatedSchema;
-    }
-
-    private GraphQLSchema createSchemaWithDirectives(GraphQLSchema schema){
+    public GraphQLSchema createSchemaWithDirectives(){
+        GraphQLSchema schema = MapExposedSchema.customSchema(userQuery,"com.chegg.federation.user" );
         return Federation.transform(schema).fetchEntities(env -> env.<List<Map<String, Object>>>getArgument(_Entity.argumentName)
                 .stream()
                 .map(values -> {
