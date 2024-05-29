@@ -1,5 +1,2 @@
 rootProject.name = 'boots-federation-poc'
-include 'product'
-include 'user'
-include 'review'
-
+include 'product', 'user', 'review', 'directives'

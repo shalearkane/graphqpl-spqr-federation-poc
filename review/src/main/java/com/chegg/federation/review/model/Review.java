@@ -1,7 +1,7 @@
 package com.chegg.federation.review.model;
 
-import com.chegg.federation.review.directive.FederationKeyDirective;
-import com.chegg.federation.review.directive.FederationProvidesDirective;
+import directives.FederationKeyDirective;
+import directives.FederationProvidesDirective;
 
 @FederationKeyDirective(fields = "id")
 public class Review {

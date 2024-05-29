@@ -1,1 +1,3 @@
-rootProject.name = 'product'
+rootProject.name = 'user'
+include('directives')
+project(':directives').projectDir = file('/Users/soumik.dutta/Documents/GitHub/graphqpl-spqr-federation-poc/directives')

@@ -1,8 +1,8 @@
 package com.chegg.federation.review.model;
 
-import com.chegg.federation.review.directive.FederationExtendsDirective;
-import com.chegg.federation.review.directive.FederationExternalDirective;
-import com.chegg.federation.review.directive.FederationKeyDirective;
+import directives.FederationExtendsDirective;
+import directives.FederationExternalDirective;
+import directives.FederationKeyDirective;
 
 import java.util.List;
 

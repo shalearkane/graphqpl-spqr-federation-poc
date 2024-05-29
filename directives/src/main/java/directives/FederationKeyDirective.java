@@ -1,4 +1,4 @@
-package com.chegg.federation.product.directive;
+package directives;
 
 import io.leangen.graphql.annotations.types.GraphQLDirective;
 

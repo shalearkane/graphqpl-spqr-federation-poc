@@ -1,6 +1,6 @@
 package com.chegg.federation.product.model;
 
-import com.chegg.federation.product.directive.FederationKeyDirective;
+import directives.FederationKeyDirective;
 import io.leangen.graphql.annotations.GraphQLQuery;
 
 @FederationKeyDirective(fields = "upc")

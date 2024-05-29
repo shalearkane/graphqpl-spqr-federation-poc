@@ -1,6 +1,6 @@
 package com.chegg.federation.user.model;
 
-import com.chegg.federation.user.directive.FederationKeyDirective;
+import directives.FederationKeyDirective;
 
 import java.util.Objects;
 

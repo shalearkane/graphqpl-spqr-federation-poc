@@ -1,4 +1,4 @@
-package com.chegg.federation.user.directive;
+package directives;
 
 import io.leangen.graphql.annotations.types.GraphQLDirective;
 
@@ -7,9 +7,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@GraphQLDirective(name = "requires")
+@GraphQLDirective(name = "extends")
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD})
-public @interface FederationRequiresDirective {
-    String fields();
+@Target({ElementType.TYPE})
+public @interface FederationExtendsDirective {
 }
