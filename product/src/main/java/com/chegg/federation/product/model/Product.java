@@ -3,6 +3,8 @@ package com.chegg.federation.product.model;
 import directives.FederationKeyDirective;
 import io.leangen.graphql.annotations.GraphQLQuery;
 
+import java.util.Objects;
+
 @FederationKeyDirective(fields = "upc")
 public class Product {
     private String upc;
@@ -16,6 +18,10 @@ public class Product {
         this.upc = upc;
         this.name = name;
         this.price = price;
+    }
+
+    public static Product lookup() {
+        return new Product("vand", "aliz", 1);
     }
 
     @GraphQLQuery(name = "upc")
@@ -52,7 +58,7 @@ public class Product {
 
         Product product = (Product) o;
 
-        return upc != null ? upc.equals(product.upc) : product.upc == null;
+        return Objects.equals(upc, product.upc);
 
     }
 

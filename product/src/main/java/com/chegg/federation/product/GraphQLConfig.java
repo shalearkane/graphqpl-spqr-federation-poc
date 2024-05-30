@@ -6,24 +6,20 @@ import com.chegg.federation.product.model.Product;
 import com.chegg.federation.product.query.ProductQuery;
 import com.chegg.federation.product.query.ProductService;
 import customMapExposedSchema.MapExposedSchema;
-import graphql.introspection.Introspection;
-import graphql.schema.GraphQLArgument;
-import graphql.schema.GraphQLDirective;
-import graphql.schema.GraphQLScalarType;
+import directives.FederationKeyDirective;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.SchemaPrinter;
-import io.leangen.graphql.GraphQLSchemaGenerator;
-import io.leangen.graphql.metadata.Directive;
-import io.leangen.graphql.metadata.strategy.query.DirectiveBuilder;
-import io.leangen.graphql.metadata.strategy.query.DirectiveBuilderParams;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.*;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.web.context.support.StandardServletEnvironment;
 
-import java.lang.reflect.AnnotatedType;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Configuration
@@ -37,28 +33,76 @@ public class GraphQLConfig {
     private static final String MAPPED_TYPE = "_mappedType";
     private static final String TYPE = "type";
 
+    private Class<?> extractBeanClass(BeanDefinition beanDefinition) {
+        try {
+            return ((ScannedGenericBeanDefinition) beanDefinition)
+                    .resolveBeanClass(this.getClass().getClassLoader());
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+    }
+
     @Bean
-    public GraphQLSchema createSchemaWithDirectives() {
-        GraphQLSchema schema = MapExposedSchema.customSchema(productQuery,"com.chegg.federation.product" );
-        return Federation.transform(schema).fetchEntities(env -> env.<List<Map<String, Object>>>getArgument(_Entity.argumentName)
-                .stream()
-                .map(values -> {
-                    if ("Product".equals(values.get("__typename"))) {
-                        final Object upc = values.get("upc");
-                        if (upc instanceof String) {
-                            return productService.find((String) upc);
-                        }
-                    }
-                    return null;
-                })
-                .collect(Collectors.toList()))
+    public GraphQLSchema createSchemaWithDirectives() throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+        GraphQLSchema schema = MapExposedSchema.customSchema(productQuery, "com.chegg.federation.product");
+
+        ClassPathScanningCandidateComponentProvider scanner =
+                new ClassPathScanningCandidateComponentProvider(false);
+
+        scanner.addIncludeFilter(new AnnotationTypeFilter(FederationKeyDirective.class));
+
+        HashMap<String, String> EntityKeyMap = new HashMap<>();
+        HashMap<String, Class<?>> EntityBeanMap = new HashMap<>();
+        for (BeanDefinition bd : scanner.findCandidateComponents("com.chegg.federation.product")) {
+            System.out.println(bd.getBeanClassName());
+            final String EntityName = bd.getBeanClassName().substring(bd.getBeanClassName().lastIndexOf('.') + 1);
+            ScannedGenericBeanDefinition bds = (ScannedGenericBeanDefinition) bd;
+            Class c = extractBeanClass(bd);
+            System.out.println(c.getMethod("lookup", null).invoke(null));
+//            System.out.println(bds.getClass().getMethod("lookup", null));
+            System.out.println(((ScannedGenericBeanDefinition) bd)
+                    .getMetadata()
+                    .getAnnotationAttributes(FederationKeyDirective.class.getName()).toString());
+
+            final Map<String, Object> MapsForFederation = ((ScannedGenericBeanDefinition) bd)
+                    .getMetadata()
+                    .getAnnotationAttributes(FederationKeyDirective.class.getName());
+
+            final String KeyFields = (String) MapsForFederation.get("fields");
+            EntityKeyMap.put(EntityName, KeyFields);
+            EntityBeanMap.put(EntityName, extractBeanClass(bd));
+        }
+
+        GraphQLSchema federationSchema1 = Federation.transform(schema).fetchEntities(env -> env.<List<Map<String, Object>>>getArgument(_Entity.argumentName)
+                        .stream()
+                        .map(values -> {
+                            final String EntityClass = (String) values.get("__typename");
+                            if(EntityKeyMap.containsKey(values.get("__typename"))) {
+                                final Object key =values.get(EntityKeyMap.get(EntityClass));
+                                if(key instanceof String) {
+                                    final Class<?> c = EntityBeanMap.get(EntityClass);
+                                    if (c != null) {
+                                        try {
+                                            return c.getMethod("lookup", null).invoke(null);
+                                        } catch (Exception e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }
+                                }
+                            }
+                            return null;
+                        })
+                        .collect(Collectors.toList()))
                 .resolveEntityType(env -> {
-                    final Object src = env.getObject();
-                    if (src instanceof Product) {
-                        return env.getSchema().getObjectType("Product");
+                    final String EntityNameInProject = env.getObject().getClass().getName();
+                    final String EntityName = EntityNameInProject.substring(EntityNameInProject.lastIndexOf('.') + 1);
+                    if (EntityKeyMap.containsKey(EntityName)) {
+                        return env.getSchema().getObjectType(EntityName);
                     }
                     return null;
                 }).build();
+
+        return federationSchema1;
     }
 
     private void printSchema(GraphQLSchema schema) {
