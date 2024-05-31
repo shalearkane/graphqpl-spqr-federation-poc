@@ -2,23 +2,18 @@ package com.chegg.federation.product;
 
 import com.apollographql.federation.graphqljava.Federation;
 import com.apollographql.federation.graphqljava._Entity;
-import com.chegg.federation.product.model.Product;
 import com.chegg.federation.product.query.ProductQuery;
 import com.chegg.federation.product.query.ProductService;
 import customMapExposedSchema.MapExposedSchema;
 import directives.FederationKeyDirective;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.idl.SchemaPrinter;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.*;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.web.context.support.StandardServletEnvironment;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,22 +49,13 @@ public class GraphQLConfig {
         HashMap<String, String> EntityKeyMap = new HashMap<>();
         HashMap<String, Class<?>> EntityBeanMap = new HashMap<>();
         for (BeanDefinition bd : scanner.findCandidateComponents("com.chegg.federation.product")) {
-            System.out.println(bd.getBeanClassName());
             final String EntityName = bd.getBeanClassName().substring(bd.getBeanClassName().lastIndexOf('.') + 1);
-            ScannedGenericBeanDefinition bds = (ScannedGenericBeanDefinition) bd;
-            Class c = extractBeanClass(bd);
-            System.out.println(c.getMethod("lookup", null).invoke(null));
-//            System.out.println(bds.getClass().getMethod("lookup", null));
-            System.out.println(((ScannedGenericBeanDefinition) bd)
-                    .getMetadata()
-                    .getAnnotationAttributes(FederationKeyDirective.class.getName()).toString());
-
-            final Map<String, Object> MapsForFederation = ((ScannedGenericBeanDefinition) bd)
+            final Map<String, Object> ClassAnnotations = ((ScannedGenericBeanDefinition) bd)
                     .getMetadata()
                     .getAnnotationAttributes(FederationKeyDirective.class.getName());
 
-            final String KeyFields = (String) MapsForFederation.get("fields");
-            EntityKeyMap.put(EntityName, KeyFields);
+            final String KeyField = (String) ClassAnnotations.get("fields");
+            EntityKeyMap.put(EntityName, KeyField);
             EntityBeanMap.put(EntityName, extractBeanClass(bd));
         }
 
@@ -77,9 +63,9 @@ public class GraphQLConfig {
                         .stream()
                         .map(values -> {
                             final String EntityClass = (String) values.get("__typename");
-                            if(EntityKeyMap.containsKey(values.get("__typename"))) {
-                                final Object key =values.get(EntityKeyMap.get(EntityClass));
-                                if(key instanceof String) {
+                            if (EntityKeyMap.containsKey(values.get("__typename"))) {
+                                final Object key = values.get(EntityKeyMap.get(EntityClass));
+                                if (key instanceof String) {
                                     final Class<?> c = EntityBeanMap.get(EntityClass);
                                     if (c != null) {
                                         try {
