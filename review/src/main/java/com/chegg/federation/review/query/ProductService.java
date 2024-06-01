@@ -26,9 +26,9 @@ public class ProductService {
     }
 
     public Product lookupProduct(String upc) {
-        Product product1 = products.stream().filter(product -> product.getUpc().equals(upc)).findAny().get();
+        System.out.println("Getting hit by a raging federating server");
+        Product product1 = new Product(upc);
         product1.setReviews(reviews.stream()
-                .filter(review -> review.getProduct().getUpc().equals(product1.getUpc()))
                 .collect(Collectors.toList()));
         return product1;
     }

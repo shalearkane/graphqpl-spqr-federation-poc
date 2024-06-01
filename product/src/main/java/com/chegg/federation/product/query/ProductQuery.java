@@ -1,6 +1,7 @@
 package com.chegg.federation.product.query;
 
 import com.chegg.federation.product.model.Product;
+import com.chegg.federation.product.repository.ProductRepository;
 import graphql.kickstart.execution.context.GraphQLContext;
 import io.leangen.graphql.annotations.GraphQLArgument;
 import io.leangen.graphql.annotations.GraphQLEnvironment;
@@ -11,6 +12,8 @@ import org.dataloader.DataLoaderRegistry;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -36,6 +39,15 @@ public class ProductQuery {
             return productLoader.load(upc);
         }
         throw new IllegalStateException("No product data loader found");
+    }
+
+    @GraphQLQuery(name = "getProducts")
+    public List<Product> getProducts(@GraphQLEnvironment ResolutionEnvironment env) {
+        List<String> ids = new LinkedList<>();
+        for(Integer i = 0; i<10; i++) {
+            ids.add("1");
+        }
+        return ProductRepository.getProductForIds(ids);
     }
 
 
