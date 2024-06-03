@@ -11,6 +11,7 @@ public class User {
     private String name;
     private String username;
     private Address address;
+    private Product product;
 
     public User(final String id) {
         this.id = id;
@@ -69,5 +70,13 @@ public class User {
     @Override
     public int hashCode() {
         return Objects.hash(id, name, username, address);
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(final Product product) {
+        this.product = product;
     }
 }

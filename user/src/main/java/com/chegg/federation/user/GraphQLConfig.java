@@ -2,7 +2,9 @@ package com.chegg.federation.user;
 
 import com.apollographql.federation.graphqljava.Federation;
 import com.apollographql.federation.graphqljava._Entity;
+import com.chegg.federation.user.model.Product;
 import com.chegg.federation.user.model.User;
+import com.chegg.federation.user.query.ProductService;
 import com.chegg.federation.user.query.UserQuery;
 import com.chegg.federation.user.query.UserService;
 import customMapExposedSchema.MapExposedSchema;
@@ -25,6 +27,9 @@ public class GraphQLConfig {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ProductService productService;
+
     @Bean
     public GraphQLSchema createSchemaWithDirectives(){
         GraphQLSchema schema = MapExposedSchema.customSchema(userQuery,"com.chegg.federation.user" );
@@ -37,6 +42,13 @@ public class GraphQLConfig {
                             return userService.lookupUser((String)id);
                         }
                     }
+
+                    if ("Product".equals(values.get("__typename"))) {
+                        final Object upc = values.get("upc");
+                        if (upc instanceof String) {
+                            return productService.lookupProduct((String) upc);
+                        }
+                    }
                     return null;
                 })
                 .collect(Collectors.toList()))
@@ -44,6 +56,9 @@ public class GraphQLConfig {
                     final Object src = env.getObject();
                     if (src instanceof User) {
                         return env.getSchema().getObjectType("User");
+                    }
+                    if (src instanceof Product) {
+                        return env.getSchema().getObjectType("Product");
                     }
                     return null;
                 }).build();
