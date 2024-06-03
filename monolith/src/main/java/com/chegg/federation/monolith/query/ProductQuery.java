@@ -11,10 +11,7 @@ import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -43,11 +40,14 @@ public class ProductQuery {
 
     @GraphQLQuery(name = "getProducts")
     public List<Product> getProducts(@GraphQLEnvironment ResolutionEnvironment env) {
-        List<String> ids = new LinkedList<>();
+        List<Product> lp = new ArrayList<>();
+
         for(Integer i = 0; i<10; i++) {
-            ids.add("1");
+            ProductService p = new ProductService();
+            lp.add(p.find("1"));
         }
-        return ProductRepository.getProductForIds(ids);
+
+        return lp;
     }
 
 

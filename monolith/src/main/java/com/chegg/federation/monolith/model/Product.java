@@ -10,8 +10,14 @@ public class Product {
     private String name;
     private Integer price;
     private List<Review> reviews;
+    private List<User> endorsedBy;
 
     public Product() {
+    }
+
+    public Product(final String upc, final List<User> users) {
+        this.upc = upc;
+        this.endorsedBy = users;
     }
 
     public Product(String upc, String name, Integer price) {
@@ -79,5 +85,12 @@ public class Product {
 
     public void setReviews(final List<Review> reviews) {
         this.reviews = reviews;
+    }
+
+    public List<User> getEndorsedBy() {
+        return endorsedBy;
+    }
+    public void setEndorsedBy(final List<User> endorsedBy) {
+        this.endorsedBy = endorsedBy;
     }
 }
