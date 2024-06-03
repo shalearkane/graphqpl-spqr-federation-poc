@@ -1,0 +1,38 @@
+package com.chegg.federation.monolith.query;
+
+import com.chegg.federation.monolith.model.Product;
+import com.chegg.federation.monolith.model.Review;
+import com.chegg.federation.monolith.model.User;
+import io.leangen.graphql.annotations.GraphQLContext;
+import io.leangen.graphql.annotations.GraphQLQuery;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class ProductService {
+    public List<Product> products = new ArrayList<>();
+    public List<Review> reviews = new ArrayList<>();
+
+    public ProductService() {
+        products.add(new Product("1"));
+        products.add(new Product("2"));
+        products.add(new Product("3"));
+
+        reviews.add(new Review("1","Love it!", new User("1", "Sam"), new Product("1")));
+        reviews.add(new Review("2","Too expensive.", new User("1", "Sam"), new Product("2")));
+        reviews.add(new Review("3","Could be better.", new User("2", "Ram"), new Product("3")));
+        reviews.add(new Review("4","Prefer something else.", new User("2", "Ram"), new Product("1")));
+    }
+
+    @GraphQLQuery(name = "reviews")
+    public List<Review> reviews(@GraphQLContext Product product) {
+        return reviews;
+    }
+    public Product find(String upc){
+        Product product1 = new Product("1","Table", 899);
+        return product1;
+    }
+}
