@@ -1,5 +1,5 @@
 const { ApolloServer } = require("apollo-server");
-const { ApolloGateway,RemoteGraphQLDataSource } = require("@apollo/gateway");
+const { ApolloGateway, RemoteGraphQLDataSource } = require("@apollo/gateway");
 
 const gateway = new ApolloGateway({
     serviceList: [
@@ -12,7 +12,7 @@ const gateway = new ApolloGateway({
         { name: "reviews", url: "http://localhost:5003/graphql" },
         { name: "products", url: "http://localhost:5001/graphql" }
 
-    ]
+    ],
     // Experimental: Enabling this enables the query plan view in Playground.
 });
 
@@ -27,8 +27,7 @@ const gateway = new ApolloGateway({
         engine: false,
 
         // Subscriptions are unsupported but planned for a future Gateway version.
-        subscriptions: false
-
+        subscriptions: false,
     });
 
     server.listen().then(({ url }) => {

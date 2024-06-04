@@ -19,7 +19,7 @@ public class UserService {
 
     @PostConstruct
     public void init() {
-        User user1 = new User("1", "@ada", "Ada Lovelace");
+        User user1 = new User("1", "@anything", "Ada Lovelace");
         userAddressMap.put(user1, new Address(1l, "New York", "America"));
         users.add(user1);
         User user2 = new User("2", "@complete", "Alan Turing");
