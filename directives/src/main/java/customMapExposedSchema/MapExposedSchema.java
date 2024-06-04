@@ -1,5 +1,6 @@
 package customMapExposedSchema;
 
+import com.apollographql.federation.graphqljava.Federation;
 import graphql.introspection.Introspection;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLDirective;
@@ -17,19 +18,6 @@ public class MapExposedSchema {
 
         // UNREPRESENTABLE scalar
         GraphQLScalarType unrepresentableScalar = (GraphQLScalarType) schema.getType("UNREPRESENTABLE");
-
-        // _mappedType directive definition
-        GraphQLDirective mappedTypeDirective = GraphQLDirective.newDirective()
-                .name("_mappedType")
-                .description("")
-                .validLocation(Introspection.DirectiveLocation.OBJECT)
-                .argument(GraphQLArgument.newArgument()
-                        .name("type")
-                        .description("")
-                        .type(unrepresentableScalar)
-                        .build()
-                )
-                .build();
 
         // _mappedOperation directive definition
         GraphQLDirective mappedOperationDirective = GraphQLDirective.newDirective()
@@ -51,6 +39,19 @@ public class MapExposedSchema {
                 .validLocation(Introspection.DirectiveLocation.INPUT_FIELD_DEFINITION)
                 .argument(GraphQLArgument.newArgument()
                         .name("inputField")
+                        .description("")
+                        .type(unrepresentableScalar)
+                        .build()
+                )
+                .build();
+
+        // _mappedType directive definition
+        GraphQLDirective mappedTypeDirective = GraphQLDirective.newDirective()
+                .name("_mappedType")
+                .description("")
+                .validLocations(Introspection.DirectiveLocation.INPUT_OBJECT, Introspection.DirectiveLocation.OBJECT)
+                .argument(GraphQLArgument.newArgument()
+                        .name("type")
                         .description("")
                         .type(unrepresentableScalar)
                         .build()
