@@ -1,0 +1,1 @@
+docker build --tag router -f apollo-router.dockerfile . && docker run -p 4000:4000 router
