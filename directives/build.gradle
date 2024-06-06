@@ -12,11 +12,6 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'io.leangen.graphql:spqr:0.11.0'
-    implementation 'com.graphql-java-kickstart:graphql-spring-boot-starter:11.0.0'
-    implementation 'com.graphql-java-kickstart:graphiql-spring-boot-starter:11.0.0'
-
-
-    implementation 'com.apollographql.federation:federation-graphql-java-support:0.6.5'
+    implementation 'io.leangen.graphql:spqr:0.12.4'
+    implementation 'com.apollographql.federation:federation-graphql-java-support:4.5.0'
 }

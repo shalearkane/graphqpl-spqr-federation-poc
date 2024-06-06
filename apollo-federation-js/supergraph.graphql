@@ -1,0 +1,101 @@
+schema
+  @link(url: "https://specs.apollo.dev/link/v1.0")
+  @link(url: "https://specs.apollo.dev/join/v0.3", for: EXECUTION)
+{
+  query: Query
+}
+
+directive @join__enumValue(graph: join__Graph!) repeatable on ENUM_VALUE
+
+directive @join__field(graph: join__Graph, requires: join__FieldSet, provides: join__FieldSet, type: String, external: Boolean, override: String, usedOverridden: Boolean) repeatable on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+directive @join__graph(name: String!, url: String!) on ENUM_VALUE
+
+directive @join__implements(graph: join__Graph!, interface: String!) repeatable on OBJECT | INTERFACE
+
+directive @join__type(graph: join__Graph!, key: join__FieldSet, extension: Boolean! = false, resolvable: Boolean! = true, isInterfaceObject: Boolean! = false) repeatable on OBJECT | INTERFACE | UNION | ENUM | INPUT_OBJECT | SCALAR
+
+directive @join__unionMember(graph: join__Graph!, member: String!) repeatable on UNION
+
+directive @link(url: String, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
+
+type Address
+  @join__type(graph: USER)
+{
+  city: String
+  country: String
+  id: Long
+}
+
+scalar join__FieldSet
+
+enum join__Graph {
+  PRODUCT @join__graph(name: "product", url: "http://localhost:5001/graphql")
+  REVIEW @join__graph(name: "review", url: "http://localhost:5003/graphql")
+  USER @join__graph(name: "user", url: "http://localhost:5002/graphql")
+}
+
+scalar link__Import
+
+enum link__Purpose {
+  """
+  `SECURITY` features provide metadata necessary to securely resolve fields.
+  """
+  SECURITY
+
+  """
+  `EXECUTION` features provide metadata necessary for operation execution.
+  """
+  EXECUTION
+}
+
+"""A 64-bit signed integer"""
+scalar Long
+  @join__type(graph: USER)
+
+type Product
+  @join__type(graph: PRODUCT, key: "upc")
+  @join__type(graph: REVIEW, key: "upc", extension: true)
+{
+  name: String @join__field(graph: PRODUCT)
+  price: Int @join__field(graph: PRODUCT)
+  upc: String
+  reviews: [Review] @join__field(graph: REVIEW)
+}
+
+"""Query root"""
+type Query
+  @join__type(graph: PRODUCT)
+  @join__type(graph: REVIEW)
+  @join__type(graph: USER)
+{
+  getProductsInStock: [Product] @join__field(graph: PRODUCT)
+  trivia(id: String): Review @join__field(graph: REVIEW)
+  getUserById(id: String): User @join__field(graph: USER)
+}
+
+type Review
+  @join__type(graph: REVIEW, key: "id")
+{
+  author: User @join__field(graph: REVIEW, provides: "username")
+  body: String
+  id: String
+  product: Product
+}
+
+"""Use SPQR's SchemaPrinter to remove this from SDL"""
+scalar UNREPRESENTABLE
+  @join__type(graph: PRODUCT)
+  @join__type(graph: REVIEW)
+  @join__type(graph: USER)
+
+type User
+  @join__type(graph: REVIEW, key: "id", extension: true)
+  @join__type(graph: USER, key: "id")
+{
+  id: String
+  reviews: [Review] @join__field(graph: REVIEW)
+  username: String @join__field(graph: REVIEW, external: true) @join__field(graph: USER)
+  address: Address @join__field(graph: USER)
+  name: String @join__field(graph: USER)
+}
