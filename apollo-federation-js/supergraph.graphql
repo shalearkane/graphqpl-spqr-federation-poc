@@ -49,18 +49,20 @@ enum link__Purpose {
   EXECUTION
 }
 
-"""A 64-bit signed integer"""
+"""Long type"""
 scalar Long
   @join__type(graph: USER)
 
 type Product
   @join__type(graph: PRODUCT, key: "upc")
   @join__type(graph: REVIEW, key: "upc", extension: true)
+  @join__type(graph: USER, key: "upc", extension: true)
 {
   name: String @join__field(graph: PRODUCT)
   price: Int @join__field(graph: PRODUCT)
   upc: String
   reviews: [Review] @join__field(graph: REVIEW)
+  endorsedBy: [User] @join__field(graph: USER)
 }
 
 """Query root"""
@@ -69,6 +71,8 @@ type Query
   @join__type(graph: REVIEW)
   @join__type(graph: USER)
 {
+  getProductByID(id: String): Product @join__field(graph: PRODUCT)
+  getProducts: [Product] @join__field(graph: PRODUCT)
   getProductsInStock: [Product] @join__field(graph: PRODUCT)
   trivia(id: String): Review @join__field(graph: REVIEW)
   getUserById(id: String): User @join__field(graph: USER)
@@ -98,4 +102,5 @@ type User
   username: String @join__field(graph: REVIEW, external: true) @join__field(graph: USER)
   address: Address @join__field(graph: USER)
   name: String @join__field(graph: USER)
+  product: Product @join__field(graph: USER)
 }
